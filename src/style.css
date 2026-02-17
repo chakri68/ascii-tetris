@@ -13,9 +13,9 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Game size vars */
-  --next-block-size: 100px;
-  --char-block-size: 2.5rem;
-  --font-char-block-size: 1.8rem;
+  --next-block-size: 80px;
+  --char-block-size: 2.15rem;
+  --font-char-block-size: 1.7rem;
 }
 
 a {
@@ -47,19 +47,18 @@ h1 {
 
 #app {
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
 }
 
 #game {
   max-width: 1280px;
   min-width: 480px;
-  /* display: grid;
-  grid-template-columns: 1fr auto; */
+  display: grid;
+  grid-template-columns: 160px auto;
   border-radius: 1rem;
-  background-color: #1e1e1e;
-  gap: 3rem;
-  padding: 2rem;
+  background-color: #2e2e2e;
+  padding: 0.25rem;
 }
 
 #main-text {
@@ -68,12 +67,12 @@ h1 {
   gap: 0.25rem;
 
   #heading {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 500;
   }
 
   #instructions {
-    font-size: 0.85rem;
+    font-size: 0.65rem;
     line-height: 1.4;
     margin-bottom: 1rem;
     color: rgba(255, 255, 255, 0.6);
@@ -83,24 +82,59 @@ h1 {
 #main-area {
   height: fit-content;
   min-width: 320px;
+  padding: 2rem;
+  border-radius: 0.8rem;
+  background-color: #1e1e1e;
 }
 
 #side-panel {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  padding-top: 4rem;
+  gap: 1.5rem;
+  padding: 2rem;
+  margin-right: 1.5rem;
+}
+
+.panel-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+#score-section {
+  text-align: center;
+}
+
+#score {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#next-section {
+  text-align: center;
 }
 
 #next-block {
   width: var(--next-block-size);
   height: var(--next-block-size);
   margin: 0 auto;
-  background-color: #2e2e2e;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  padding: 0.25rem;
+}
+
+#next-block .preview-cell {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .row {

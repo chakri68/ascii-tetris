@@ -74,7 +74,27 @@ export class Sprite {
   }
 
   public clone(): Sprite {
-    return new Sprite(clonePoints(this.initialPoints));
+    return new Sprite(clonePoints(this.points));
+  }
+
+  public rotate(clockwise: boolean = true): Sprite {
+    // Use first point as pivot
+    const pivot = this.points[0];
+
+    for (let i = 1; i < this.points.length; i++) {
+      const p = this.points[i];
+      const relX = p.x - pivot.x;
+      const relY = p.y - pivot.y;
+
+      if (clockwise) {
+        p.x = pivot.x + relY;
+        p.y = pivot.y - relX;
+      } else {
+        p.x = pivot.x - relY;
+        p.y = pivot.y + relX;
+      }
+    }
+    return this;
   }
 
   private isInRange(point: Vector2D, size: Vector2D) {

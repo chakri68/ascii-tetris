@@ -6,6 +6,10 @@ import { CellSprite, CollisionDirection, type Vector2D } from "./types";
 const gameDiv = document.getElementById("main-area")!;
 const mainText = document.getElementById("heading")!;
 const subText = document.getElementById("instructions")!;
+const scoreDisplay = document.getElementById("score")!;
+const nextBlockDiv = document.getElementById("next-block")!;
+
+let score = 0;
 
 function createGameGrid(size: Vector2D): boolean[][] {
   for (let y = 0; y < size.y; y++) {
@@ -93,13 +97,57 @@ function getRandomElement<T>(arr: T[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-const SIZE: Vector2D = { x: 10, y: 10 };
+function updateScore(points: number) {
+  score += points;
+  scoreDisplay.innerText = score.toString();
+}
+
+function renderNextBlock(sprite: Sprite) {
+  nextBlockDiv.innerHTML = "";
+
+  // Create 4x4 preview grid
+  const previewGrid: boolean[][] = Array.from({ length: 4 }, () =>
+    Array.from({ length: 4 }, () => false),
+  );
+
+  // Normalize sprite points to fit in preview (offset to center)
+  const minX = Math.min(...sprite.points.map((p) => p.x));
+  const minY = Math.min(...sprite.points.map((p) => p.y));
+
+  for (const p of sprite.points) {
+    const normalizedX = p.x - minX;
+    const normalizedY = p.y - minY;
+    if (
+      normalizedX < 4 &&
+      normalizedY < 4 &&
+      normalizedX >= 0 &&
+      normalizedY >= 0
+    ) {
+      previewGrid[normalizedY][normalizedX] = true;
+    }
+  }
+
+  // Render preview grid
+  for (let y = 0; y < 4; y++) {
+    for (let x = 0; x < 4; x++) {
+      const cell = document.createElement("div");
+      cell.classList.add("preview-cell");
+      cell.innerHTML = previewGrid[y][x] ? "[]" : "";
+      nextBlockDiv.appendChild(cell);
+    }
+  }
+}
+
+const SIZE: Vector2D = { x: 10, y: 20 };
 const pixelGrid = createGameGrid(SIZE);
 const RENDER_SPEED = 100;
 
 async function startBlockDescent(sprite: Sprite) {
-  // Add event listener for keyboards left and right keys
-  const handleLeftAndRightKeyPress = (ev: KeyboardEvent) => {
+  let dropSpeed = 300;
+  let hardDrop = false;
+
+  // Add event listener for keyboard controls
+  const handleKeyPress = (ev: KeyboardEvent) => {
     if (ev.key === "ArrowLeft") {
       if (
         sprite
@@ -131,9 +179,45 @@ async function startBlockDescent(sprite: Sprite) {
       renderGrid(pixelGrid);
       return;
     }
+
+    // Rotation
+    if (ev.key === "ArrowUp") {
+      const testSprite = sprite.clone();
+      testSprite.rotate();
+
+      if (
+        !testSprite.checkIfCollides({ x: 0, y: 0 }, pixelGrid) &&
+        testSprite.checkIfOutOfBounds({ x: 0, y: 0 }, pixelGrid).length === 0
+      ) {
+        removeFromPixelGrid(sprite);
+        sprite.rotate();
+        addToPixelGrid(sprite);
+        renderGrid(pixelGrid);
+      }
+      return;
+    }
+
+    // Soft drop (speed up)
+    if (ev.key === "ArrowDown") {
+      dropSpeed = 50;
+      return;
+    }
+
+    // Hard drop (instant)
+    if (ev.key === " ") {
+      hardDrop = true;
+      return;
+    }
   };
 
-  document.addEventListener("keydown", handleLeftAndRightKeyPress);
+  const handleKeyUp = (ev: KeyboardEvent) => {
+    if (ev.key === "ArrowDown") {
+      dropSpeed = 300;
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyPress);
+  document.addEventListener("keyup", handleKeyUp);
 
   while (
     !sprite
@@ -144,13 +228,18 @@ async function startBlockDescent(sprite: Sprite) {
     removeFromPixelGrid(sprite);
     addToPixelGrid(sprite.translate({ x: 0, y: 1 }));
     renderGrid(pixelGrid);
-    await wait(300);
+
+    if (hardDrop) {
+      continue; // Skip wait for instant drop
+    }
+    await wait(dropSpeed);
   }
 
-  document.removeEventListener("keydown", handleLeftAndRightKeyPress);
+  document.removeEventListener("keydown", handleKeyPress);
+  document.removeEventListener("keyup", handleKeyUp);
 }
 
-function checkAndClearCompleteRows(pixelGrid: boolean[][]) {
+function checkAndClearCompleteRows(pixelGrid: boolean[][]): number {
   const completedRows = [];
   const size = { x: pixelGrid[0].length, y: pixelGrid.length };
   for (let y = 0; y < size.y; y++) {
@@ -168,16 +257,23 @@ function checkAndClearCompleteRows(pixelGrid: boolean[][]) {
     const remRow = pixelGrid.splice(y, 1);
     pixelGrid.unshift(remRow[0]);
   }
+
+  return completedRows.length;
 }
 
 async function main() {
   mainText.innerText = "Tetris";
   subText.innerText = "";
+  score = 0;
+  scoreDisplay.innerText = "0";
 
   let isGameComplete = false;
+  let nextSprite = getRandomElement(SPRITES).clone();
 
   while (!isGameComplete) {
-    const sprite = getRandomElement(SPRITES).clone();
+    const sprite = nextSprite;
+    nextSprite = getRandomElement(SPRITES).clone();
+    renderNextBlock(nextSprite);
 
     if (
       sprite
@@ -186,15 +282,23 @@ async function main() {
       sprite.checkIfCollides({ x: 0, y: 1 }, pixelGrid)
     ) {
       isGameComplete = true;
+      break;
     }
 
     await startBlockDescent(sprite);
     await wait(RENDER_SPEED);
-    checkAndClearCompleteRows(pixelGrid);
+
+    const clearedRows = checkAndClearCompleteRows(pixelGrid);
+    if (clearedRows > 0) {
+      // Tetris scoring: 100 for 1 line, 300 for 2, 500 for 3, 800 for 4 (Tetris!)
+      const points = [0, 100, 300, 500, 800][clearedRows] || clearedRows * 200;
+      updateScore(points);
+    }
+
     renderGrid(pixelGrid);
   }
 
-  subText.innerText = "Game Over";
+  subText.innerText = `Game Over! Final Score: ${score}`;
 }
 
 main();
