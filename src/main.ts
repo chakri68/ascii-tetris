@@ -1,7 +1,79 @@
 import { ASCII_CELL_SPRITE_MAP, SPRITES } from "./constants";
 import type { Sprite } from "./sprite";
 import "./style.css";
+import {
+  themes,
+  applyTheme,
+  getSavedTheme,
+  getThemeById,
+  initializeTheme,
+} from "./themes";
 import { CellSprite, CollisionDirection, type Vector2D } from "./types";
+
+// Initialize theme before anything else
+initializeTheme();
+
+// Set up custom theme dropdown
+const dropdownContainer = document.getElementById("theme-dropdown")!;
+const dropdownToggle = document.getElementById("theme-dropdown-toggle")!;
+const dropdownSelected = document.getElementById("theme-dropdown-selected")!;
+const dropdownMenu = document.getElementById("theme-dropdown-menu")!;
+const savedTheme = getSavedTheme();
+
+// Populate dropdown options
+themes.forEach((theme) => {
+  const option = document.createElement("button");
+  option.className = "dropdown-option";
+  option.dataset.themeId = theme.id;
+
+  const label = document.createElement("span");
+  label.textContent = theme.name;
+  option.appendChild(label);
+
+  if (theme.id === savedTheme.id) {
+    option.classList.add("selected");
+    dropdownSelected.textContent = theme.name;
+  }
+
+  option.addEventListener("click", () => {
+    const selectedTheme = getThemeById(theme.id);
+    if (selectedTheme) {
+      applyTheme(selectedTheme);
+      dropdownSelected.textContent = selectedTheme.name;
+
+      // Update selected state
+      dropdownMenu.querySelectorAll(".dropdown-option").forEach((opt) => {
+        opt.classList.remove("selected");
+      });
+      option.classList.add("selected");
+
+      // Close dropdown
+      dropdownContainer.classList.remove("open");
+    }
+  });
+
+  dropdownMenu.appendChild(option);
+});
+
+// Toggle dropdown
+dropdownToggle.addEventListener("click", (e) => {
+  e.stopPropagation();
+  dropdownContainer.classList.toggle("open");
+});
+
+// Close dropdown when clicking outside
+document.addEventListener("click", (e) => {
+  if (!dropdownContainer.contains(e.target as Node)) {
+    dropdownContainer.classList.remove("open");
+  }
+});
+
+// Close dropdown on Escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    dropdownContainer.classList.remove("open");
+  }
+});
 
 const gameDiv = document.getElementById("main-area")!;
 const mainText = document.getElementById("heading")!;
