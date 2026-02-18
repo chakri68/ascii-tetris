@@ -70,22 +70,22 @@ export const themes: Theme[] = [
     name: "Electronika",
     id: "electronika",
     colors: {
-      background: "#020402", // Deep CRT black-green
-      gameBackground: "#050805", // Slightly lighter green tint
-      panelBackground: "#0a140a", // Dark phosphor panel
-      text: "#39ff14", // Bright phosphor green
-      textMuted: "#1b5e20", // Dim green (old terminal feel)
-      accent: "#39ff14", // Same green (no modern blue!)
-      accentHover: "#66ff66", // Slight glow boost
-      block: "#39ff14", // Blocks are terminal green
+      background: "#040705", // CRT-black with green tint
+      gameBackground: "#050a06", // subtle difference from bg
+      panelBackground: "#07110a", // dark green panel
+      text: "#46f06a", // phosphor green (less laser neon)
+      textMuted: "rgba(70, 240, 106, 0.55)",
+      accent: "#46f06a",
+      accentHover: "#76ff9a",
+      block: "#46f06a",
     },
     fonts: {
-      primary: "'VT323', monospace", // Best Google-font terminal vibe
+      primary: "'VT323', monospace",
       monospace: "'VT323', monospace",
       headingWeight: 400,
       bodyWeight: 400,
-      headingSize: "2rem",
-      bodySize: "1.1rem",
+      headingSize: "2.2rem",
+      bodySize: "1.15rem",
     },
   },
 ];
@@ -123,6 +123,10 @@ export function applyTheme(theme: Theme): void {
   );
   root.style.setProperty("--font-heading-size", theme.fonts.headingSize);
   root.style.setProperty("--font-body-size", theme.fonts.bodySize);
+
+  // Also add a classname to the root
+  root.className = "";
+  root.classList.add(theme.id);
 
   // Save theme preference
   localStorage.setItem(THEME_STORAGE_KEY, theme.id);

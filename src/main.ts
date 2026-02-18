@@ -210,7 +210,7 @@ function renderNextBlock(sprite: Sprite) {
   }
 }
 
-const SIZE: Vector2D = { x: 10, y: 16 };
+const SIZE: Vector2D = { x: 10, y: 18 };
 const pixelGrid = createGameGrid(SIZE);
 const RENDER_SPEED = 100;
 
